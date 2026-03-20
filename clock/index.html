@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>World Clock</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0f0f13;
+      color: #e8e8f0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 3rem;
+    }
+
+    h1 {
+      font-size: clamp(1.5rem, 4vw, 2.4rem);
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #a0a0c0;
+      margin-bottom: 0.4rem;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #55556a;
+      letter-spacing: 0.08em;
+      margin-bottom: 2.5rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.2rem;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    .card {
+      background: #17171f;
+      border: 1px solid #252535;
+      border-radius: 14px;
+      padding: 1.4rem 1.6rem 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .card:hover {
+      border-color: #4040a0;
+      transform: translateY(-2px);
+    }
+
+    .city {
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #6060a0;
+      font-weight: 600;
+    }
+
+    .zone-label {
+      font-size: 0.72rem;
+      color: #44445a;
+      letter-spacing: 0.05em;
+    }
+
+    .time {
+      font-size: clamp(1.6rem, 3.5vw, 2rem);
+      font-weight: 200;
+      letter-spacing: 0.06em;
+      color: #d0d0ff;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+
+    .date {
+      font-size: 0.78rem;
+      color: #55556a;
+      letter-spacing: 0.04em;
+    }
+
+    footer {
+      margin-top: 3rem;
+      font-size: 0.75rem;
+      color: #33334a;
+    }
+  </style>
+</head>
+<body>
+  <h1>World Clock</h1>
+  <p class="subtitle">Live times across the globe</p>
+  <div class="grid" id="grid"></div>
+  <footer>Updates every second</footer>
+
+  <script>
+    const ZONES = [
+      { city: 'UTC',        tz: 'UTC',                    label: 'Coordinated Universal Time' },
+      { city: 'New York',   tz: 'America/New_York',       label: 'US Eastern (EST/EDT)'       },
+      { city: 'Los Angeles',tz: 'America/Los_Angeles',    label: 'US Pacific (PST/PDT)'       },
+      { city: 'London',     tz: 'Europe/London',          label: 'GMT / BST'                  },
+      { city: 'Dubai',      tz: 'Asia/Dubai',             label: 'Gulf Standard Time (GST)'   },
+      { city: 'India',      tz: 'Asia/Kolkata',           label: 'India Standard Time (IST)'  },
+      { city: 'Tokyo',      tz: 'Asia/Tokyo',             label: 'Japan Standard Time (JST)'  },
+      { city: 'Sydney',     tz: 'Australia/Sydney',       label: 'AEST / AEDT'                },
+    ];
+
+    const grid = document.getElementById('grid');
+
+    // Build cards
+    const cards = ZONES.map(zone => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="city">${zone.city}</div>
+        <div class="zone-label">${zone.label}</div>
+        <div class="time" id="time-${zone.tz.replace(/\//g, '_')}">--:--:--</div>
+        <div class="date" id="date-${zone.tz.replace(/\//g, '_')}">---</div>
+      `;
+      grid.appendChild(card);
+      return zone;
+    });
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function tick() {
+      const now = new Date();
+      ZONES.forEach(zone => {
+        const id = zone.tz.replace(/\//g, '_');
+        try {
+          const parts = new Intl.DateTimeFormat('en-GB', {
+            timeZone: zone.tz,
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false,
+            year: 'numeric', month: 'short', day: 'numeric',
+            weekday: 'short',
+          }).formatToParts(now);
+
+          const get = type => parts.find(p => p.type === type)?.value ?? '';
+          const timeStr = `${get('hour')}:${get('minute')}:${get('second')}`;
+          const dateStr = `${get('weekday')}, ${get('day')} ${get('month')} ${get('year')}`;
+
+          document.getElementById('time-' + id).textContent = timeStr;
+          document.getElementById('date-' + id).textContent = dateStr;
+        } catch (e) {
+          document.getElementById('time-' + id).textContent = '--:--:--';
+        }
+      });
+    }
+
+    tick();
+    setInterval(tick, 1000);
+  </script>
+</body>
+</html>
