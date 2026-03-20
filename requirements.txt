@@ -1,0 +1,2 @@
+Pillow>=10.0.0
+pytoshop>=1.1.0
