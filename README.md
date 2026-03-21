@@ -10,12 +10,20 @@ A browser-based tool that reads the **exact dimensions of any image you upload**
 
 ## Quick run (no install)
 
-The app is a static page. Serve the folder over HTTP so ES modules work:
+The app is a static page. Serve the folder over HTTP so ES modules work. Pick **one** of these:
 
 ```bash
+# Option A: Node/npm
 cd /path/to/Mockups
-npx serve .           # requires Node/npm OR use: python3 -m http.server 8000
-# open http://localhost:3000 (or http://localhost:8000 for the Python command)
+npx serve .
+# open http://localhost:3000
+```
+
+```bash
+# Option B: Python 3
+cd /path/to/Mockups
+python3 -m http.server 8000
+# open http://localhost:8000
 ```
 
 Then:
