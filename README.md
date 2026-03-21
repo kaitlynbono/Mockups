@@ -8,6 +8,30 @@ Tools for creating mockups and design assets.
 
 A browser-based tool that reads the **exact dimensions of any image you upload** and automatically builds a layered, ready-to-edit PSD in [Photopea](https://www.photopea.com) — no fixed canvas sizes, no manual setup.
 
+## Quick run (no install)
+
+The app is a static page. Serve the folder over HTTP so ES modules work. Pick **one** of these:
+
+```bash
+# Option A: Node/npm
+cd /path/to/Mockups
+npx serve .
+# open http://localhost:3000
+```
+
+```bash
+# Option B: Python 3
+cd /path/to/Mockups
+python3 -m http.server 8000
+# open http://localhost:8000
+```
+
+Then:
+
+1. Upload an image (drag/drop or click).
+2. (Optional) Change the Title text.
+3. Click **“Open in Photopea & Build PSD”** — Photopea opens in a new tab and builds the PSD.
+
 ### Layers created
 
 | Layer | Type | Details |
