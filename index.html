@@ -207,7 +207,7 @@
 </div>
 
 <script type="module">
-  import { readImageDimensions, buildScript, runInPhotopea } from "./photopea-automation.js";
+  import { readImageDimensions, buildScript, runInPhotopea, fileToDataURL } from "./photopea-automation.js";
 
   const dropZone   = document.getElementById("drop-zone");
   const fileInput  = document.getElementById("file-input");
@@ -220,6 +220,57 @@
 
   let selectedFile = null;
   let previewObjectURL = null;
+  const LAST_UPLOAD_KEY = "mockup:lastUpload";
+
+  async function dataURLToFile(dataURL, fileName, fileType) {
+    const response = await fetch(dataURL);
+    const blob = await response.blob();
+    return new File([blob], fileName, {
+      type: fileType || blob.type || "application/octet-stream",
+    });
+  }
+
+  async function persistLastUpload(file, width, height) {
+    try {
+      const dataURL = await fileToDataURL(file);
+      const payload = {
+        name: file.name || "image",
+        type: file.type || "application/octet-stream",
+        dataURL,
+        width,
+        height,
+        title: titleInput.value,
+      };
+      localStorage.setItem(LAST_UPLOAD_KEY, JSON.stringify(payload));
+    } catch (err) {
+      console.warn("Could not persist last upload", err);
+    }
+  }
+
+  async function restoreLastUpload() {
+    const raw = localStorage.getItem(LAST_UPLOAD_KEY);
+    if (!raw) return;
+    try {
+      const saved = JSON.parse(raw);
+      if (!saved?.dataURL) return;
+
+      const restoredFile = await dataURLToFile(
+        saved.dataURL,
+        saved.name || "image",
+        saved.type
+      );
+
+      if (saved.title) {
+        titleInput.value = saved.title;
+      }
+
+      await handleFile(restoredFile);
+      setStatus("Restored your last uploaded image.", "success");
+    } catch (err) {
+      console.warn("Could not restore last upload", err);
+      localStorage.removeItem(LAST_UPLOAD_KEY);
+    }
+  }
 
   // ── Drag-over styling ──────────────────────────────────────────────────────
   dropZone.addEventListener("dragover", (e) => {
@@ -264,6 +315,8 @@
 
       selectedFile = file;
       runBtn.disabled = false;
+
+      persistLastUpload(file, width, height);
     } catch (err) {
       setStatus(err.message, "error");
     }
@@ -293,6 +346,8 @@
     status.textContent = msg;
     status.className = cls;
   }
+
+  restoreLastUpload();
 </script>
 
 </body>
