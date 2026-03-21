@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mockup PSD Builder</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: #f4f6f9;
+      color: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 16px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      margin-top: 8px;
+      color: #555;
+      font-size: 1rem;
+      max-width: 520px;
+      line-height: 1.5;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08);
+      padding: 36px 40px;
+      width: 100%;
+      max-width: 540px;
+    }
+
+    /* ── Drop zone ─────────────────────────────────────────── */
+    .drop-zone {
+      border: 2px dashed #c5cae9;
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: background .2s, border-color .2s;
+      position: relative;
+    }
+    .drop-zone:hover,
+    .drop-zone.drag-over {
+      background: #f0f4ff;
+      border-color: #5c6bc0;
+    }
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .drop-zone svg { margin-bottom: 12px; color: #5c6bc0; }
+    .drop-zone p { color: #555; font-size: .95rem; }
+    .drop-zone strong { color: #5c6bc0; }
+
+    /* ── Preview ───────────────────────────────────────────── */
+    #preview-section {
+      margin-top: 24px;
+      display: none;
+    }
+    #preview-section.visible { display: block; }
+
+    #preview-img {
+      width: 100%;
+      border-radius: 8px;
+      display: block;
+      object-fit: contain;
+      max-height: 260px;
+      background: #eee;
+    }
+
+    #dimensions {
+      margin-top: 10px;
+      font-size: .875rem;
+      color: #555;
+      text-align: center;
+    }
+
+    /* ── Options ───────────────────────────────────────────── */
+    .field {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    label { font-size: .9rem; font-weight: 600; }
+    input[type="text"] {
+      padding: 10px 14px;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input[type="text"]:focus { border-color: #5c6bc0; }
+
+    /* ── Action button ─────────────────────────────────────── */
+    button#run-btn {
+      margin-top: 28px;
+      width: 100%;
+      padding: 14px;
+      background: #5c6bc0;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s, opacity .2s;
+    }
+    button#run-btn:hover:not(:disabled) { background: #3949ab; }
+    button#run-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── Status message ────────────────────────────────────── */
+    #status {
+      margin-top: 16px;
+      font-size: .9rem;
+      text-align: center;
+      min-height: 1.4em;
+    }
+    #status.error { color: #c62828; }
+    #status.success { color: #2e7d32; }
+
+    /* ── Steps ─────────────────────────────────────────────── */
+    .steps {
+      margin-top: 40px;
+      width: 100%;
+      max-width: 540px;
+    }
+    .steps h2 { font-size: 1.1rem; margin-bottom: 14px; color: #333; }
+    ol { padding-left: 22px; }
+    ol li { margin-bottom: 8px; color: #555; font-size: .9rem; line-height: 1.5; }
+    ol li strong { color: #1a1a2e; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🖼 Mockup PSD Builder</h1>
+  <p>Upload any image and get a layered PSD — sized to your image's exact dimensions — ready to edit in Photopea.</p>
+</header>
+
+<div class="card">
+
+  <!-- Drop / file zone -->
+  <div class="drop-zone" id="drop-zone">
+    <input type="file" id="file-input" accept="image/*" aria-label="Upload image" />
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none"
+         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+      <path stroke-linecap="round" stroke-linejoin="round"
+            d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25
+               2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5
+               4.5M12 3v13.5" />
+    </svg>
+    <p><strong>Click to upload</strong> or drag & drop</p>
+    <p>PNG, JPG, WEBP, GIF …</p>
+  </div>
+
+  <!-- Image preview + detected dimensions -->
+  <div id="preview-section">
+    <img id="preview-img" alt="Preview" />
+    <p id="dimensions"></p>
+  </div>
+
+  <!-- Optional title text override -->
+  <div class="field">
+    <label for="title-text">Title layer text</label>
+    <input type="text" id="title-text" placeholder="Your Title Here" value="Your Title Here" />
+  </div>
+
+  <button id="run-btn" disabled>Open in Photopea &amp; Build PSD</button>
+
+  <p id="status" role="status" aria-live="polite"></p>
+</div>
+
+<!-- How it works -->
+<div class="steps">
+  <h2>How it works</h2>
+  <ol>
+    <li><strong>Upload</strong> any image — the tool reads its exact pixel dimensions.</li>
+    <li><strong>Photopea opens</strong> in a new tab sized to match your image.</li>
+    <li>Your image is placed as the <strong>Base Image</strong> (bottom layer).</li>
+    <li>A <strong>Title</strong> text layer (Playfair Display, 72 pt, centred) is added on top.</li>
+    <li>An <strong>Editable Elements</strong> layer group is created for your additions.</li>
+    <li>The project is <strong>saved as a PSD</strong> and exported to your Downloads folder.</li>
+  </ol>
+</div>
+
+<script type="module">
+  import { readImageDimensions, buildScript, runInPhotopea } from "./photopea-automation.js";
+
+  const dropZone   = document.getElementById("drop-zone");
+  const fileInput  = document.getElementById("file-input");
+  const previewSec = document.getElementById("preview-section");
+  const previewImg = document.getElementById("preview-img");
+  const dimLabel   = document.getElementById("dimensions");
+  const titleInput = document.getElementById("title-text");
+  const runBtn     = document.getElementById("run-btn");
+  const status     = document.getElementById("status");
+
+  let selectedFile = null;
+  let previewObjectURL = null;
+
+  // ── Drag-over styling ──────────────────────────────────────────────────────
+  dropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.classList.add("drag-over");
+  });
+  dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
+  dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropZone.classList.remove("drag-over");
+    const file = e.dataTransfer?.files?.[0];
+    if (file) handleFile(file);
+  });
+
+  // ── File input change ──────────────────────────────────────────────────────
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files?.[0];
+    if (file) handleFile(file);
+  });
+
+  // ── Handle a chosen file ──────────────────────────────────────────────────
+  async function handleFile(file) {
+    selectedFile = null;
+    runBtn.disabled = true;
+    status.textContent = "";
+    status.className = "";
+
+    // Revoke any previously created object URL to avoid memory leaks.
+    if (previewObjectURL) {
+      URL.revokeObjectURL(previewObjectURL);
+      previewObjectURL = null;
+    }
+
+    try {
+      const { width, height } = await readImageDimensions(file);
+
+      // Show preview
+      previewObjectURL = URL.createObjectURL(file);
+      previewImg.src = previewObjectURL;
+      dimLabel.textContent = `Detected: ${width} × ${height} px`;
+      previewSec.classList.add("visible");
+
+      selectedFile = file;
+      runBtn.disabled = false;
+    } catch (err) {
+      setStatus(err.message, "error");
+    }
+  }
+
+  // ── Run button ─────────────────────────────────────────────────────────────
+  runBtn.addEventListener("click", async () => {
+    if (!selectedFile) return;
+
+    runBtn.disabled = true;
+    setStatus("Building script…", "");
+
+    try {
+      const script = await buildScript(selectedFile, {
+        titleText: titleInput.value.trim() || "Your Title Here",
+      });
+      runInPhotopea(script);
+      setStatus("✅ Photopea opened — the PSD will be saved to Downloads.", "success");
+    } catch (err) {
+      setStatus(err.message, "error");
+    } finally {
+      runBtn.disabled = false;
+    }
+  });
+
+  function setStatus(msg, cls) {
+    status.textContent = msg;
+    status.className = cls;
+  }
+</script>
+
+</body>
+</html>
